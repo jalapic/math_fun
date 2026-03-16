@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digit-Pair Sum Orbits</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --accent: #2563eb;
+      --ok: #166534;
+      --ok-bg: #dcfce7;
+      --warn: #92400e;
+      --warn-bg: #fef3c7;
+      --bad: #991b1b;
+      --bad-bg: #fee2e2;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .tab-btn {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .tab-panel.hidden {
+      display: none;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    input, button, select {
+      font: inherit;
+    }
+
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    button.secondary {
+      background: #fff;
+      color: var(--accent);
+    }
+
+    button:hover, .tab-btn:hover, .example-btn:hover {
+      filter: brightness(0.98);
+    }
+
+    .examples {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .example-btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .terminal { background: var(--ok-bg); color: var(--ok); }
+    .cycle { background: var(--warn-bg); color: var(--warn); }
+    .capped { background: var(--bad-bg); color: var(--bad); }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fafafa;
+    }
+
+    .stat .k {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+
+    .stat .v {
+      font-size: 1.1rem;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .path {
+      margin-top: 12px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fbfdff;
+      overflow-wrap: anywhere;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 1rem;
+    }
+
+    .steps {
+      margin-top: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .step {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .step-head {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .pairs {
+      font-family: "Courier New", Courier, monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .info {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .matrix-controls {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+
+    .matrix-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .canvas-box {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #fff;
+      padding: 12px;
+      overflow: auto;
+    }
+
+    #matrixCanvas {
+      display: block;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: crosshair;
+      background: #ffffff;
+    }
+
+    .legend {
+      display: grid;
+      gap: 8px;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+    }
+
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,0.15);
+      flex: 0 0 auto;
+    }
+
+    .hover-box {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fafafa;
+      min-height: 100px;
+    }
+
+    @media (max-width: 1000px) {
+      .controls, .matrix-controls {
+        grid-template-columns: 1fr 1fr;
+      }
+      .matrix-wrap {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .summary-grid, .controls, .matrix-controls {
+        grid-template-columns: 1fr;
+      }
+      .wrap {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Digit-Pair Sum Orbits</h1>
+    <div class="subtitle">
+      Repeatedly replace a number by the concatenation of sums of adjacent digits.
+      Some starts end at a single digit, some enter a cycle, and some keep growing.
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="traceTab">Tracer</button>
+      <button class="tab-btn" data-tab="matrixTab">Matrix</button>
+    </div>
+
+    <div id="traceTab" class="tab-panel">
+      <div class="panel">
+        <div class="controls">
+          <div class="field">
+            <label for="startInput">Starting number</label>
+            <input id="startInput" type="text" value="7483" inputmode="numeric" />
+          </div>
+          <div class="field">
+            <label for="maxSteps">Max steps</label>
+            <input id="maxSteps" type="number" min="1" value="200" />
+          </div>
+          <div class="field">
+            <label for="maxDigits">Max digits</label>
+            <input id="maxDigits" type="number" min="1" value="1000" />
+          </div>
+          <button id="traceBtn">Trace orbit</button>
+          <button id="copyBtn" class="secondary">Copy path</button>
+        </div>
+
+        <div class="examples">
+          <button class="example-btn" data-value="7483">7483 (terminal)</button>
+          <button class="example-btn" data-value="991">991 (cycle)</button>
+          <button class="example-btn" data-value="1496">1496 (growth example)</button>
+          <button class="example-btn" data-value="1234">1234</button>
+          <button class="example-btn" data-value="9999">9999</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div id="statusBadge" class="badge terminal">Ready</div>
+        <div class="summary-grid" id="summaryGrid"></div>
+        <div class="path" id="pathBox">Enter a starting value and trace the orbit.</div>
+        <div class="info" style="margin-top:10px;">
+          Cycle detection is exact. “Exceeded cap” means the computation hit your step or digit limit before reaching a digit or repeating.
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Step details</h2>
+        <div class="muted" style="margin-bottom:10px;">
+          Each line shows how adjacent digit sums produce the next value.
+        </div>
+        <div id="stepsBox" class="steps"></div>
+      </div>
+    </div>
+
+    <div id="matrixTab" class="tab-panel hidden">
+      <div class="panel">
+        <div class="matrix-controls">
+          <div class="field">
+            <label for="matrixRows">Rows</label>
+            <input id="matrixRows" type="number" min="1" max="200" value="100" />
+          </div>
+          <div class="field">
+            <label for="matrixCols">Columns</label>
+            <input id="matrixCols" type="number" min="1" max="200" value="100" />
+          </div>
+          <div class="field">
+            <label for="matrixStart">Start value</label>
+            <input id="matrixStart" type="number" min="0" value="1" />
+          </div>
+          <div class="field">
+            <label for="colorMode">Color mode</label>
+            <select id="colorMode">
+              <option value="terminalDigit">Terminal digit</option>
+              <option value="steps">Chain length</option>
+              <option value="orbitType">Orbit type</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cellSize">Cell size</label>
+            <input id="cellSize" type="number" min="4" max="24" value="8" />
+          </div>
+          <button id="buildMatrixBtn">Build matrix</button>
+        </div>
+
+        <div class="matrix-wrap">
+          <div class="canvas-box">
+            <canvas id="matrixCanvas" width="800" height="800"></canvas>
+            <div class="info" style="margin-top:10px;">
+              Click any cell to load that number into the tracer tab. Hover to inspect a cell.
+            </div>
+          </div>
+          <div>
+            <div class="panel" style="margin-bottom:16px;">
+              <h2 style="font-size:1.1rem; margin-bottom:10px;">Legend</h2>
+              <div id="legendBox" class="legend"></div>
+            </div>
+            <div class="panel" style="margin-bottom:16px;">
+              <h2 style="font-size:1.1rem; margin-bottom:10px;">Matrix summary</h2>
+              <div id="matrixSummary" class="legend"></div>
+            </div>
+            <div class="hover-box" id="hoverBox">
+              Move over the matrix to inspect a cell.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function sanitizeInput(raw) {
+      return (raw || '').replace(/\s+/g, '').replace(/^\+/, '');
+    }
+
+    function isValidDigitString(s) {
+      return /^\d+$/.test(s) && s.length > 0;
+    }
+
+    function nextValueWithDetails(s) {
+      const parts = [];
+      const details = [];
+      for (let i = 0; i < s.length - 1; i++) {
+        const a = Number(s[i]);
+        const b = Number(s[i + 1]);
+        const sum = a + b;
+        parts.push(String(sum));
+        details.push(`${a}+${b}=${sum}`);
+      }
+      return { next: parts.join(''), details };
+    }
+
+    function traceOrbit(start, maxSteps, maxDigits) {
+      const seen = new Map();
+      const path = [];
+      const transitions = [];
+      let current = start;
+      let step = 0;
+
+      while (true) {
+        path.push(current);
+
+        if (current.length === 1) {
+          return {
+            type: 'terminal',
+            finalValue: current,
+            steps: step,
+            path,
+            transitions,
+            cycleStart: null,
+            cycleLength: null
+          };
+        }
+
+        if (seen.has(current)) {
+          const cycleStart = seen.get(current);
+          return {
+            type: 'cycle',
+            finalValue: current,
+            steps: step,
+            path,
+            transitions,
+            cycleStart,
+            cycleLength: path.length - 1 - cycleStart
+          };
+        }
+
+        if (step >= maxSteps || current.length > maxDigits) {
+          return {
+            type: 'capped',
+            finalValue: current,
+            steps: step,
+            path,
+            transitions,
+            cycleStart: null,
+            cycleLength: null
+          };
+        }
+
+        seen.set(current, step);
+        const { next, details } = nextValueWithDetails(current);
+        transitions.push({ from: current, to: next, details, index: step + 1 });
+        current = next;
+        step++;
+      }
+    }
+
+    function badgeClass(type) {
+      if (type === 'terminal') return 'badge terminal';
+      if (type === 'cycle') return 'badge cycle';
+      return 'badge capped';
+    }
+
+    function badgeText(result) {
+      if (result.type === 'terminal') return `Ends at digit ${result.finalValue}`;
+      if (result.type === 'cycle') return `Enters a cycle of length ${result.cycleLength}`;
+      return 'Exceeded cap';
+    }
+
+    function summarize(result) {
+      const last = result.path[result.path.length - 1];
+      const longest = result.path.reduce((m, x) => Math.max(m, x.length), 0);
+      const items = [
+        { k: 'Orbit type', v: result.type },
+        { k: 'Steps taken', v: String(result.steps) },
+        { k: 'Last value shown', v: last },
+        { k: 'Longest length', v: String(longest) }
+      ];
+
+      if (result.type === 'terminal') {
+        items.push({ k: 'Final digit', v: result.finalValue });
+      } else if (result.type === 'cycle') {
+        const cyc = result.path.slice(result.cycleStart, result.path.length - 1);
+        items.push({ k: 'Cycle starts at step', v: String(result.cycleStart) });
+        items.push({ k: 'Cycle values', v: cyc.join(' → ') });
+      } else {
+        items.push({ k: 'Stopped because', v: 'step or digit limit reached' });
+      }
+
+      return items;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function renderSummary(result) {
+      const grid = document.getElementById('summaryGrid');
+      const items = summarize(result);
+      grid.innerHTML = items.map(item => `
+        <div class="stat">
+          <div class="k">${escapeHtml(item.k)}</div>
+          <div class="v">${escapeHtml(item.v)}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderPath(result) {
+      document.getElementById('pathBox').textContent = result.path.join(' → ');
+    }
+
+    function renderSteps(result) {
+      const box = document.getElementById('stepsBox');
+      if (result.transitions.length === 0) {
+        box.innerHTML = '<div class="muted">No transitions to show.</div>';
+        return;
+      }
+
+      box.innerHTML = result.transitions.map((t, idx) => {
+        const repeatNote = result.type === 'cycle' && idx + 1 === result.steps
+          ? '<div class="muted" style="margin-top:6px;">This step lands on a previously seen value.</div>'
+          : '';
+        return `
+          <div class="step">
+            <div class="step-head">Step ${t.index}: ${escapeHtml(t.from)} → ${escapeHtml(t.to)}</div>
+            <div class="pairs">${escapeHtml(t.details.join(', '))}</div>
+            ${repeatNote}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function runTrace() {
+      const input = document.getElementById('startInput');
+      const maxSteps = Math.max(1, Number(document.getElementById('maxSteps').value) || 200);
+      const maxDigits = Math.max(1, Number(document.getElementById('maxDigits').value) || 1000);
+      const badge = document.getElementById('statusBadge');
+      const raw = sanitizeInput(input.value);
+
+      if (!isValidDigitString(raw)) {
+        badge.className = 'badge capped';
+        badge.textContent = 'Please enter digits only';
+        document.getElementById('summaryGrid').innerHTML = '';
+        document.getElementById('pathBox').textContent = 'Input must be a nonempty string of digits.';
+        document.getElementById('stepsBox').innerHTML = '';
+        return null;
+      }
+
+      const normalized = raw.replace(/^0+(?=\d)/, '');
+      const result = traceOrbit(normalized, maxSteps, maxDigits);
+      badge.className = badgeClass(result.type);
+      badge.textContent = badgeText(result);
+      renderSummary(result);
+      renderPath(result);
+      renderSteps(result);
+      window.latestOrbitPath = result.path.join(' → ');
+      return result;
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.toggle('hidden', panel.id !== tabId);
+      });
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabId);
+      });
+    }
+
+    const terminalPalette = {
+      '0': '#f3f4f6',
+      '1': '#fee2e2',
+      '2': '#fecaca',
+      '3': '#fed7aa',
+      '4': '#fde68a',
+      '5': '#d9f99d',
+      '6': '#bbf7d0',
+      '7': '#a7f3d0',
+      '8': '#bfdbfe',
+      '9': '#ddd6fe'
+    };
+
+    const orbitPalette = {
+      terminal: '#86efac',
+      cycle: '#fcd34d',
+      capped: '#fca5a5'
+    };
+
+    function getStepColor(steps, maxStepsSeen) {
+      const ratio = maxStepsSeen <= 0 ? 0 : steps / maxStepsSeen;
+      const light = 95 - Math.round(ratio * 55);
+      return `hsl(220, 70%, ${light}%)`;
+    }
+
+    function buildLegend(colorMode, maxStepsSeen) {
+      const legend = document.getElementById('legendBox');
+      if (colorMode === 'terminalDigit') {
+        const rows = [];
+        for (let d = 0; d <= 9; d++) {
+          rows.push(`<div class="legend-row"><span class="swatch" style="background:${terminalPalette[String(d)]}"></span><span>Ends at ${d}</span></div>`);
+        }
+        rows.push(`<div class="legend-row"><span class="swatch" style="background:${orbitPalette.cycle}"></span><span>Cycle</span></div>`);
+        rows.push(`<div class="legend-row"><span class="swatch" style="background:${orbitPalette.capped}"></span><span>Exceeded cap</span></div>`);
+        legend.innerHTML = rows.join('');
+      } else if (colorMode === 'orbitType') {
+        legend.innerHTML = `
+          <div class="legend-row"><span class="swatch" style="background:${orbitPalette.terminal}"></span><span>Terminal</span></div>
+          <div class="legend-row"><span class="swatch" style="background:${orbitPalette.cycle}"></span><span>Cycle</span></div>
+          <div class="legend-row"><span class="swatch" style="background:${orbitPalette.capped}"></span><span>Exceeded cap</span></div>
+        `;
+      } else {
+        legend.innerHTML = `
+          <div class="legend-row"><span class="swatch" style="background:${getStepColor(0, maxStepsSeen)}"></span><span>Short chain</span></div>
+          <div class="legend-row"><span class="swatch" style="background:${getStepColor(Math.max(1, Math.floor(maxStepsSeen / 2)), maxStepsSeen)}"></span><span>Medium chain</span></div>
+          <div class="legend-row"><span class="swatch" style="background:${getStepColor(maxStepsSeen, maxStepsSeen)}"></span><span>Long chain</span></div>
+        `;
+      }
+    }
+
+    function getColorForSummary(summary, colorMode, maxStepsSeen) {
+      if (colorMode === 'orbitType') return orbitPalette[summary.type];
+      if (colorMode === 'steps') return getStepColor(summary.steps, maxStepsSeen);
+      if (summary.type === 'terminal') return terminalPalette[summary.finalValue] || orbitPalette.terminal;
+      if (summary.type === 'cycle') return orbitPalette.cycle;
+      return orbitPalette.capped;
+    }
+
+    function computeMatrixSummary(value, maxSteps, maxDigits) {
+      const result = traceOrbit(String(value), maxSteps, maxDigits);
+      return {
+        value,
+        type: result.type,
+        steps: result.steps,
+        finalValue: result.type === 'terminal' ? result.finalValue : null,
+        cycleLength: result.type === 'cycle' ? result.cycleLength : null
+      };
+    }
+
+    function renderMatrixSummary(cells) {
+      const box = document.getElementById('matrixSummary');
+      const counts = { terminal: 0, cycle: 0, capped: 0 };
+      let maxStepsSeen = 0;
+      cells.forEach(c => {
+        counts[c.type] += 1;
+        maxStepsSeen = Math.max(maxStepsSeen, c.steps);
+      });
+      box.innerHTML = `
+        <div class="legend-row"><strong>Total cells:</strong> <span>${cells.length}</span></div>
+        <div class="legend-row"><strong>Terminal:</strong> <span>${counts.terminal}</span></div>
+        <div class="legend-row"><strong>Cycle:</strong> <span>${counts.cycle}</span></div>
+        <div class="legend-row"><strong>Exceeded cap:</strong> <span>${counts.capped}</span></div>
+        <div class="legend-row"><strong>Longest chain shown:</strong> <span>${maxStepsSeen}</span></div>
+      `;
+      return maxStepsSeen;
+    }
+
+    function buildMatrix() {
+      const rows = Math.max(1, Math.min(200, Number(document.getElementById('matrixRows').value) || 100));
+      const cols = Math.max(1, Math.min(200, Number(document.getElementById('matrixCols').value) || 100));
+      const start = Math.max(0, Number(document.getElementById('matrixStart').value) || 1);
+      const cellSize = Math.max(4, Math.min(24, Number(document.getElementById('cellSize').value) || 8));
+      const colorMode = document.getElementById('colorMode').value;
+      const maxSteps = Math.max(1, Number(document.getElementById('maxSteps').value) || 200);
+      const maxDigits = Math.max(1, Number(document.getElementById('maxDigits').value) || 1000);
+
+      const cells = [];
+      let n = start;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          cells.push(computeMatrixSummary(n, maxSteps, maxDigits));
+          n++;
+        }
+      }
+
+      const canvas = document.getElementById('matrixCanvas');
+      canvas.width = cols * cellSize;
+      canvas.height = rows * cellSize;
+      const ctx = canvas.getContext('2d');
+      const maxStepsSeen = renderMatrixSummary(cells);
+      buildLegend(colorMode, maxStepsSeen);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      cells.forEach((cell, idx) => {
+        const r = Math.floor(idx / cols);
+        const c = idx % cols;
+        ctx.fillStyle = getColorForSummary(cell, colorMode, maxStepsSeen);
+        ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+      });
+
+      if (cellSize >= 8) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+        for (let x = 0; x <= cols; x++) {
+          ctx.beginPath();
+          ctx.moveTo(x * cellSize + 0.5, 0);
+          ctx.lineTo(x * cellSize + 0.5, rows * cellSize);
+          ctx.stroke();
+        }
+        for (let y = 0; y <= rows; y++) {
+          ctx.beginPath();
+          ctx.moveTo(0, y * cellSize + 0.5);
+          ctx.lineTo(cols * cellSize, y * cellSize + 0.5);
+          ctx.stroke();
+        }
+      }
+
+      window.matrixState = { rows, cols, start, cellSize, cells };
+      document.getElementById('hoverBox').innerHTML = 'Move over the matrix to inspect a cell.';
+    }
+
+    function inspectMatrixEvent(evt, doClick) {
+      const state = window.matrixState;
+      if (!state) return;
+      const canvas = document.getElementById('matrixCanvas');
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (evt.clientX - rect.left) * scaleX;
+      const y = (evt.clientY - rect.top) * scaleY;
+      const c = Math.floor(x / state.cellSize);
+      const r = Math.floor(y / state.cellSize);
+      if (r < 0 || r >= state.rows || c < 0 || c >= state.cols) return;
+      const idx = r * state.cols + c;
+      const cell = state.cells[idx];
+      document.getElementById('hoverBox').innerHTML = `
+        <div><strong>Value:</strong> ${cell.value}</div>
+        <div><strong>Row, col:</strong> ${r + 1}, ${c + 1}</div>
+        <div><strong>Orbit type:</strong> ${cell.type}</div>
+        <div><strong>Steps:</strong> ${cell.steps}</div>
+        <div><strong>Final digit:</strong> ${cell.finalValue ?? '—'}</div>
+        <div><strong>Cycle length:</strong> ${cell.cycleLength ?? '—'}</div>
+      `;
+      if (doClick) {
+        document.getElementById('startInput').value = String(cell.value);
+        switchTab('traceTab');
+        runTrace();
+      }
+    }
+
+    document.getElementById('traceBtn').addEventListener('click', runTrace);
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const text = window.latestOrbitPath || '';
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById('copyBtn');
+        const old = btn.textContent;
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = old; }, 1200);
+      } catch (err) {
+        alert('Could not copy path.');
+      }
+    });
+
+    document.getElementById('startInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') runTrace();
+    });
+
+    document.querySelectorAll('.example-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('startInput').value = btn.dataset.value;
+        runTrace();
+      });
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    document.getElementById('buildMatrixBtn').addEventListener('click', buildMatrix);
+
+    document.getElementById('colorMode').addEventListener('change', () => {
+      if (window.matrixState) buildMatrix();
+    });
+
+    document.getElementById('matrixCanvas').addEventListener('mousemove', (evt) => inspectMatrixEvent(evt, false));
+    document.getElementById('matrixCanvas').addEventListener('click', (evt) => inspectMatrixEvent(evt, true));
+
+    runTrace();
+    buildMatrix();
+  </script>
+</body>
+</html>
